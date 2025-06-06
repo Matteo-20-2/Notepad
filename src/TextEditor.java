@@ -27,8 +27,8 @@ import java.io.*;
 
 public class TextEditor extends JFrame {
     JMenuBar menuBar;
-    JMenu fileMenu;
-    JMenuItem newItem, openItem, saveItem, saveWithNameItem;
+    JMenu fileMenu, helpMenu;
+    JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem;
     JTextArea txtArea;
     JScrollPane scrollPane;
     File currentFile;
@@ -40,6 +40,8 @@ public class TextEditor extends JFrame {
 
         // Menu
         menuBar = new JMenuBar();
+        helpMenu = new JMenu("Help");
+        creditsItem = new JMenuItem("Credits");
         fileMenu = new JMenu("File");
         newItem = new JMenuItem("New");
         openItem = new JMenuItem("Open");
@@ -51,10 +53,14 @@ public class TextEditor extends JFrame {
         saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         saveWithNameItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 
+        helpMenu.add(creditsItem);
+
         fileMenu.add(newItem);
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         fileMenu.add(saveWithNameItem);
+
+        menuBar.add(helpMenu);
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
 
@@ -76,6 +82,7 @@ public class TextEditor extends JFrame {
         // Azioni menu
         currentFile = null;
 
+        creditsItem.addActionListener(new Credits());
         newItem.addActionListener(new New());
         openItem.addActionListener(new Open());
         saveItem.addActionListener(new Save());
@@ -104,6 +111,20 @@ public class TextEditor extends JFrame {
         }
     }
 
+    public class Credits implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String credits = """
+                    TextEditor v0.6
+                    
+                    Created by Matteo Marangoni
+                    
+                    Date of creation: 02/05/2025
+                    """;
+            JOptionPane.showMessageDialog(null, credits);
+        }
+    }
 
     public class Open implements ActionListener {
         @Override
