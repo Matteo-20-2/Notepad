@@ -27,13 +27,18 @@ import java.io.*;
  */
 
 public class TextEditor extends JFrame {
-    JMenuBar menuBar;
-    JMenu fileMenu, helpMenu, appereanceMenu;
-    JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
-    JTextArea txtArea;
-    JScrollPane scrollPane;
-    File currentFile;
-    String currentTheme = "dark";
+    private JMenuBar menuBar;
+    private JMenu fileMenu, helpMenu, appereanceMenu;
+    private JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
+    private JTextArea txtArea;
+    private JScrollPane scrollPane;
+    private File currentFile;
+    private String currentTheme = "dark";
+
+    public JTextArea getTxtArea() {
+        return txtArea;
+    }
+
     public TextEditor() {
         super("Notepad - Untitled");
         setSize(600, 480);
@@ -98,7 +103,7 @@ public class TextEditor extends JFrame {
         openItem.addActionListener(new Open());
         saveItem.addActionListener(new Save());
         saveWithNameItem.addActionListener(new SaveWithName());
-        findItem.addActionListener(new Find());
+        findItem.addActionListener(e -> new FindDialog(this));
         themeModeItem.addActionListener(new ChangeTheme());
 
         setVisible(true);
@@ -259,19 +264,5 @@ public class TextEditor extends JFrame {
         }
     }
 
-    public class Find implements ActionListener{
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String daCercare = JOptionPane.showInputDialog("Trova:");
-            if (daCercare.isBlank() || daCercare == null) return;
-
-            String testo = txtArea.getText();
-            int index = testo.indexOf(daCercare);
-            if (index != -1){
-                txtArea.requestFocus();
-                txtArea.select(index, index + daCercare.length());
-            }
-        }
-    }
 }
