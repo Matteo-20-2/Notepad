@@ -3,10 +3,7 @@ package org.notepad;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.*;
 
 /**
@@ -20,8 +17,6 @@ import java.io.*;
 
 /*
     ChatGPT: https://chatgpt.com/share/683def73-52b4-8007-b347-79cded5959c8
-    TODO: Aggiungere asterisco nel titolo quando il testo è modificato
-    TODO: Aggiungere una funzione "Trova" (CTRL + F) con campo di ricerca
     TODO: Contatore di parole/caratteri
     TODO: Implementare salvataggio automatico
  */
@@ -33,10 +28,15 @@ public class TextEditor extends JFrame {
     private JTextArea txtArea;
     private JScrollPane scrollPane;
     private File currentFile;
-    private String currentTheme = "dark";
+    private String currentTheme;
+    private UnsavedChangesListener listener;
 
     public JTextArea getTxtArea() {
         return txtArea;
+    }
+
+    public String getText(){
+        return txtArea.getText();
     }
 
     public TextEditor() {
@@ -63,6 +63,8 @@ public class TextEditor extends JFrame {
         openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         saveWithNameItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        findItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+
 
         helpMenu.add(creditsItem);
 
@@ -86,7 +88,21 @@ public class TextEditor extends JFrame {
         txtArea.setWrapStyleWord(true);
         txtArea.setMargin(new Insets(5,5,5,5));
         scrollPane = new JScrollPane(txtArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        listener = new UnsavedChangesListener(this);
+        txtArea.getDocument().addDocumentListener(listener);
+        txtArea.addMouseWheelListener(e -> {
+            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0){
+                Font currentFont = txtArea.getFont();
+                int fontSize = currentFont.getSize();
+                int notches = e.getWheelRotation();
 
+                int newSize = fontSize - notches;
+                if(newSize >= 8 && newSize <= 72){
+                    txtArea.setFont(new Font(currentFont.getName(), currentFont.getStyle(), newSize));
+                }
+                e.consume();
+            }
+        });
 
         // Layout
         JPanel pMain = new JPanel(new BorderLayout());
@@ -114,18 +130,20 @@ public class TextEditor extends JFrame {
     public class New implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (currentFile != null && !txtArea.getText().isEmpty()) {
-                int scelta = JOptionPane.showConfirmDialog(null, "Do you want to save your current file?", "", JOptionPane.YES_NO_CANCEL_OPTION);
-                if (scelta == JOptionPane.YES_OPTION) {
+            if (currentFile != null && !txtArea.getText().isEmpty() && listener.isModified()) {
+                int scelta2 = JOptionPane.showConfirmDialog(null, "Do you want to save your current file?", "", JOptionPane.YES_NO_CANCEL_OPTION);
+                if (scelta2 == JOptionPane.YES_OPTION) {
                     Save save = new Save();
                     save.actionPerformed(e);
-                } else if (scelta == JOptionPane.CANCEL_OPTION) {
-                    return; // Annulla il "New"
+                } else if (scelta2 == JOptionPane.CANCEL_OPTION) {
+                    return;
                 }
             }
+
             txtArea.setText("");
             currentFile = null;
-            setTitle("Notepad - Untitled");
+            listener.resetModifiedFlag(null); // <-- per aggiornare titolo e flag
+
         }
     }
 
@@ -148,16 +166,16 @@ public class TextEditor extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             // Se c'è un file corrente, chiedi se salvarlo
-            if (currentFile != null && !txtArea.getText().isEmpty()) {
+            if (currentFile != null && !txtArea.getText().isEmpty() && listener.isModified()) {
                 int scelta2 = JOptionPane.showConfirmDialog(null, "Do you want to save your current file?", "", JOptionPane.YES_NO_CANCEL_OPTION);
                 if (scelta2 == JOptionPane.YES_OPTION) {
                     Save save = new Save();
                     save.actionPerformed(e);
-                    setTitle("Notepad - "+currentFile.getName());
                 } else if (scelta2 == JOptionPane.CANCEL_OPTION) {
                     return;
                 }
             }
+
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileNameExtensionFilter("Text File (.txt)", "txt"));
@@ -165,8 +183,6 @@ public class TextEditor extends JFrame {
 
             if (scelta == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-                currentFile = file;
-                setTitle("Notepad - "+currentFile.getName());
 
                 StringBuilder text = new StringBuilder();
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -175,6 +191,9 @@ public class TextEditor extends JFrame {
                         text.append(line).append("\n");
                     }
                     txtArea.setText(text.toString());
+                    currentFile = file;
+                    //setTitle("Notepad - "+currentFile.getName());
+                    listener.resetModifiedFlag(currentFile);
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore apertura file: " + ex.getMessage());
                 }
