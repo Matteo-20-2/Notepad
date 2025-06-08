@@ -1,5 +1,4 @@
-package org.example;
-import com.formdev.flatlaf.*;
+package org.notepad;
 import javax.swing.*;
 
 public class Main {

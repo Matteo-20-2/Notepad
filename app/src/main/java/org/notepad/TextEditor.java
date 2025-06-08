@@ -1,4 +1,4 @@
-package org.example;
+package org.notepad;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -23,18 +23,17 @@ import java.io.*;
     TODO: Aggiungere asterisco nel titolo quando il testo è modificato
     TODO: Aggiungere una funzione "Trova" (CTRL + F) con campo di ricerca
     TODO: Contatore di parole/caratteri
-    TODO: Aggiungere una modalità scura attivabile da menu
     TODO: Implementare salvataggio automatico
  */
 
 public class TextEditor extends JFrame {
     JMenuBar menuBar;
-    JMenu fileMenu, helpMenu;
-    JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem;
+    JMenu fileMenu, helpMenu, appereanceMenu;
+    JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
     JTextArea txtArea;
     JScrollPane scrollPane;
     File currentFile;
-
+    String currentTheme = "dark";
     public TextEditor() {
         super("Notepad - Untitled");
         setSize(600, 480);
@@ -48,7 +47,12 @@ public class TextEditor extends JFrame {
         newItem = new JMenuItem("New");
         openItem = new JMenuItem("Open");
         saveItem = new JMenuItem("Save");
+        findItem = new JMenuItem("Find");
         saveWithNameItem = new JMenuItem("Save With Name");
+        appereanceMenu = new JMenu("Appearance");
+        themeModeItem = new JMenuItem("☀️ Light Mode");
+
+
 
         newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
@@ -61,9 +65,13 @@ public class TextEditor extends JFrame {
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         fileMenu.add(saveWithNameItem);
+        fileMenu.add(findItem);
+
+        appereanceMenu.add(themeModeItem);
 
         menuBar.add(helpMenu);
         menuBar.add(fileMenu);
+        menuBar.add(appereanceMenu);
         setJMenuBar(menuBar);
 
         // Text area
@@ -83,12 +91,15 @@ public class TextEditor extends JFrame {
 
         // Azioni menu
         currentFile = null;
+        currentTheme = "dark";
 
         creditsItem.addActionListener(new Credits());
         newItem.addActionListener(new New());
         openItem.addActionListener(new Open());
         saveItem.addActionListener(new Save());
         saveWithNameItem.addActionListener(new SaveWithName());
+        findItem.addActionListener(new Find());
+        themeModeItem.addActionListener(new ChangeTheme());
 
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -220,5 +231,47 @@ public class TextEditor extends JFrame {
             }
         }
 
+    }
+
+    public class ChangeTheme implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+
+            try {
+                if (currentTheme.equals("dark")) {
+                    UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+                    currentTheme = "light";
+                    themeModeItem.setText("🌙 Dark Mode");
+                } else {
+                    UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
+                    currentTheme = "dark";
+                    themeModeItem.setText("☀️ Light Mode");
+                }
+
+                // Aggiorna la UI dell'intera finestra
+                SwingUtilities.updateComponentTreeUI(TextEditor.this);
+
+            } catch (UnsupportedLookAndFeelException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public class Find implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String daCercare = JOptionPane.showInputDialog("Trova:");
+            if (daCercare.isBlank() || daCercare == null) return;
+
+            String testo = txtArea.getText();
+            int index = testo.indexOf(daCercare);
+            if (index != -1){
+                txtArea.requestFocus();
+                txtArea.select(index, index + daCercare.length());
+            }
+        }
     }
 }

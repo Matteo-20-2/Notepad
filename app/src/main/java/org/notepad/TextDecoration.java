@@ -1,4 +1,4 @@
-package org.example;
+package org.notepad;
 
 import javax.swing.JTextPane;
 import javax.swing.text.*;
