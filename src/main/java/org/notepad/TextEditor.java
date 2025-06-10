@@ -1,10 +1,14 @@
 package org.notepad;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.StringTokenizer;
 
 /**
  * TextEditor.java
@@ -17,15 +21,15 @@ import java.io.*;
 
 /*
     ChatGPT: https://chatgpt.com/share/683def73-52b4-8007-b347-79cded5959c8
-    TODO: Contatore di parole/caratteri
-    TODO: Implementare salvataggio automatico
+    TODO: Fare in modo che quando si cambia il tema si cambi anche il background e il foreground
+    TODO: Inserire il resto dei linguaggi
  */
 
 public class TextEditor extends JFrame {
     private JMenuBar menuBar;
     private JMenu fileMenu, helpMenu, appereanceMenu;
     private JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
-    private JTextArea txtArea;
+    private RSyntaxTextArea txtArea;
     private JScrollPane scrollPane;
     private File currentFile;
     private String currentTheme;
@@ -83,8 +87,11 @@ public class TextEditor extends JFrame {
         setJMenuBar(menuBar);
 
         // Text area
-        txtArea = new JTextArea(19, 50);
+        txtArea = new RSyntaxTextArea(19, 50);
+        txtArea.setCurrentLineHighlightColor(Color.DARK_GRAY);
         txtArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        txtArea.setForeground(Color.WHITE);
+        txtArea.setBackground(Color.DARK_GRAY);
         txtArea.setLineWrap(true);
         txtArea.setWrapStyleWord(true);
         txtArea.setMargin(new Insets(5,5,5,5));
@@ -131,6 +138,22 @@ public class TextEditor extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
+    public void SetSintax(){
+        String fileName = currentFile.toString().toLowerCase();
+        StringTokenizer tokenizer = new StringTokenizer(fileName, ".");
+        String extension = tokenizer.nextToken();
+
+
+        switch (extension){
+            case "py":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
+                break;
+
+            case "java":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+        }
+    }
+
     public void updateStatusBar(){
         String text = txtArea.getText().trim();
         int charCount = text.length();
@@ -174,6 +197,8 @@ public class TextEditor extends JFrame {
         }
     }
 
+
+
     public class Open implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -206,6 +231,9 @@ public class TextEditor extends JFrame {
                     currentFile = file;
                     //setTitle("Notepad - "+currentFile.getName());
                     listener.resetModifiedFlag(currentFile);
+
+                    SetSintax();
+
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore apertura file: " + ex.getMessage());
                 }
@@ -239,35 +267,39 @@ public class TextEditor extends JFrame {
         }
     }
 
-    public class SaveWithName implements ActionListener{
+    public class SaveWithName implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
             String text = txtArea.getText();
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Text File (.txt)", "txt"));
-            int scelta = fileChooser.showSaveDialog(null);
 
+            // Mostra tutti i file (non forza .txt)
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files (*.txt)", "txt"));
+            int scelta = fileChooser.showSaveDialog(null);
 
             if (scelta == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
 
-                if (!file.getName().toLowerCase().endsWith(".txt")) {
+                // Aggiunge .txt solo se NON è presente nessuna estensione
+                if (!file.getName().contains(".")) {
                     file = new File(file.getAbsolutePath() + ".txt");
-                    currentFile = file;
-                    setTitle("Notepad - "+currentFile.getName());
                 }
+
+                currentFile = file;
+                setTitle("Notepad - " + currentFile.getName());
+
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                     writer.write(text);
                     JOptionPane.showMessageDialog(null, "File salvato!");
+                    SetSintax();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore salvataggio: " + ex.getMessage());
-
                 }
             }
         }
-
     }
+
 
     public class ChangeTheme implements ActionListener{
 

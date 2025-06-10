@@ -6,9 +6,10 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
+
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -24,6 +25,7 @@ dependencies {
     // This dependency is used by the application.
     implementation libs.guava
     implementation "com.formdev:flatlaf:3.2"
+    implementation 'com.fifesoft:rsyntaxtextarea:3.3.3'
 
 }
 
@@ -37,6 +39,14 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'org.notepad.Main'
+}
+
+jar{
+    manifest {
+        attributes(
+                'Main-Class' : 'org.notepad.Main'
+        )
+    }
 }
 
 tasks.named('test') {
