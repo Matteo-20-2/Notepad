@@ -11,22 +11,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.StringTokenizer;
 
-/**
- * TextEditor.java
- *
- * Un semplice editor di testo
- *
- * @author Matteo Marangoni
- * @date 04/06/2025
- */
-
-/*
-    ChatGPT: https://chatgpt.com/share/683def73-52b4-8007-b347-79cded5959c8
-    TODO: Fare in modo che quando si cambia il tema si cambi anche il background e il foreground
-    TODO: Inserire il resto dei linguaggi
- */
-
 public class TextEditor extends JFrame {
+    // UI components and core variables
     private JMenuBar menuBar;
     private JMenu fileMenu, helpMenu, appereanceMenu;
     private JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
@@ -37,10 +23,12 @@ public class TextEditor extends JFrame {
     private UnsavedChangesListener listener;
     private JLabel statusBar;
 
+    // Accessor for the text area
     public JTextArea getTxtArea() {
         return txtArea;
     }
 
+    // Returns the full text content
     public String getText(){
         return txtArea.getText();
     }
@@ -48,9 +36,9 @@ public class TextEditor extends JFrame {
     public TextEditor() {
         super("Notepad - Untitled");
         setSize(600, 480);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null); // Center window
 
-        // Menu
+        // Initialize menus and menu items
         menuBar = new JMenuBar();
         helpMenu = new JMenu("Help");
         creditsItem = new JMenuItem("Credits");
@@ -63,31 +51,29 @@ public class TextEditor extends JFrame {
         appereanceMenu = new JMenu("Appearance");
         themeModeItem = new JMenuItem("☀️ Light Mode");
 
-
-
+        // Add keyboard shortcuts
         newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         saveWithNameItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         findItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
 
-
+        // Add items to menus
         helpMenu.add(creditsItem);
-
         fileMenu.add(newItem);
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         fileMenu.add(saveWithNameItem);
         fileMenu.add(findItem);
-
         appereanceMenu.add(themeModeItem);
 
+        // Add menus to the menu bar
         menuBar.add(helpMenu);
         menuBar.add(fileMenu);
         menuBar.add(appereanceMenu);
         setJMenuBar(menuBar);
 
-        // Text area
+        // Text editor setup with syntax highlighting
         txtArea = new RSyntaxTextArea(19, 50);
         txtArea.setCurrentLineHighlightColor(Color.DARK_GRAY);
         txtArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
@@ -96,37 +82,52 @@ public class TextEditor extends JFrame {
         txtArea.setLineWrap(true);
         txtArea.setWrapStyleWord(true);
         txtArea.setMargin(new Insets(5,5,5,5));
+
         scrollPane = new RTextScrollPane(txtArea);
+        scrollPane.setWheelScrollingEnabled(true);
+
         listener = new UnsavedChangesListener(this);
         txtArea.getDocument().addDocumentListener(listener);
+
+        // Enable zoom with Ctrl + mouse wheel
         txtArea.addMouseWheelListener(e -> {
-            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0){
+            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+                // Zooming in/out
                 Font currentFont = txtArea.getFont();
                 int fontSize = currentFont.getSize();
                 int notches = e.getWheelRotation();
 
                 int newSize = fontSize - notches;
-                if(newSize >= 8 && newSize <= 72){
+                if (newSize >= 8 && newSize <= 72) {
                     txtArea.setFont(new Font(currentFont.getName(), currentFont.getStyle(), newSize));
                 }
-                e.consume();
+            } else {
+                // Normal scrolling
+                JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+                int notches = e.getWheelRotation();
+                int scrollSpeed = 15;
+                int newValue = verticalScrollBar.getValue() + (notches * verticalScrollBar.getUnitIncrement() * scrollSpeed);
+                verticalScrollBar.setValue(newValue);
             }
+            e.consume();
         });
 
+        // Status bar for word and character count
         statusBar = new JLabel("Words: 0    |   Chars: 0");
         statusBar.setBorder(BorderFactory.createEmptyBorder(5,10,5,10));
 
-        // Layout
+        // Layout configuration
         JPanel pMain = new JPanel(new BorderLayout());
         pMain.add(scrollPane, BorderLayout.CENTER);
         pMain.add(statusBar, BorderLayout.SOUTH);
         Container c = getContentPane();
         c.add(pMain);
 
-        // Azioni menu
+        // Initial setup
         currentFile = null;
         currentTheme = "dark";
 
+        // Add action listeners to menu items
         creditsItem.addActionListener(new Credits());
         newItem.addActionListener(new New());
         openItem.addActionListener(new Open());
@@ -135,10 +136,12 @@ public class TextEditor extends JFrame {
         findItem.addActionListener(e -> new FindDialog(this));
         themeModeItem.addActionListener(new ChangeTheme());
 
+        // Show window
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
+    // Detects file extension and applies syntax highlighting accordingly
     public void setSintax(){
         System.out.println("sono nella funzione");
         String fileName = currentFile.toString().toLowerCase();
@@ -152,25 +155,22 @@ public class TextEditor extends JFrame {
             case "py":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);;
                 break;
-
             case "java":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
                 break;
-
             case "c":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
                 break;
-
             case "cpp":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS);
                 break;
-
             default:
                 System.out.println("BOH");
                 break;
         }
     }
 
+    // Updates word and character count in status bar
     public void updateStatusBar(){
         String text = txtArea.getText().trim();
         int charCount = text.length();
@@ -178,7 +178,7 @@ public class TextEditor extends JFrame {
         statusBar.setText("Words: "+wordCount + "   |   Chars: "+charCount);
     }
 
-    //Classe per fare un nuovo file
+    // Creates a new file (asks to save if current is modified)
     public class New implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -195,31 +195,38 @@ public class TextEditor extends JFrame {
             txtArea.setText("");
             currentFile = null;
             listener.resetModifiedFlag(null);
-
         }
     }
 
-    public class Credits implements ActionListener{
-
+    // Displays credits and version info
+    public class Credits implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             String credits = """
-                    TextEditor v0.6
-                    
-                    Created by Matteo Marangoni
-                    
-                    Date of creation: 02/05/2025
-                    """;
+                TextEditor v1.0
+
+                Created by Matteo Marangoni
+
+                Date of creation: 02/06/2025
+                
+                Last Update Date: 11/06/2025
+                
+                Features:
+                • Syntax highlighting for Java, Python, C, and C++
+                • Light/Dark theme support
+                • Find text functionality
+                • Line numbers
+                • Zoom in/out with Ctrl+Mouse wheel
+                """;
             JOptionPane.showMessageDialog(null, credits);
         }
     }
 
-
-
+    // Opens a file and sets syntax highlighting based on extension
     public class Open implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Se c'è un file corrente, chiedi se salvarlo
+
             if (currentFile != null && !txtArea.getText().isEmpty() && listener.isModified()) {
                 int scelta2 = JOptionPane.showConfirmDialog(null, "Do you want to save your current file?", "", JOptionPane.YES_NO_CANCEL_OPTION);
                 if (scelta2 == JOptionPane.YES_OPTION) {
@@ -230,9 +237,12 @@ public class TextEditor extends JFrame {
                 }
             }
 
-
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Text File (.txt)", "txt", "py", "c", "cpp", "java"));
+            fileChooser.setFileFilter(new FileNameExtensionFilter(
+                    "Source Files (*.java, *.py, *.c, *.cpp) & Text Files (*.txt)",
+                    "java", "py", "c", "cpp", "txt"
+            ));
+
             int scelta = fileChooser.showOpenDialog(null);
 
             if (scelta == JFileChooser.APPROVE_OPTION) {
@@ -246,7 +256,6 @@ public class TextEditor extends JFrame {
                     }
                     txtArea.setText(text.toString());
                     currentFile = file;
-                    //setTitle("Notepad - "+currentFile.getName());
                     listener.resetModifiedFlag(currentFile);
 
                     setSintax();
@@ -258,12 +267,10 @@ public class TextEditor extends JFrame {
         }
     }
 
-
-    // Classe per salvare un file
+    // Saves to current file if available, otherwise asks for file name
     public class Save implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
             String text = txtArea.getText();
 
             if (currentFile != null){
@@ -275,30 +282,31 @@ public class TextEditor extends JFrame {
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore salvataggio: " + ex.getMessage());
                 }
-            }else {
+            } else {
                 SaveWithName saveWithName = new SaveWithName();
                 saveWithName.actionPerformed(e);
             }
-
-
         }
     }
 
+    // Asks user for file name and saves it
     public class SaveWithName implements ActionListener {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             String text = txtArea.getText();
-            JFileChooser fileChooser = new JFileChooser();
 
-            // Mostra tutti i file (non forza .txt)
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files (*.txt)", "txt"));
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new FileNameExtensionFilter(
+                    "Source Files (*.java, *.py, *.c, *.cpp) & Text Files (*.txt)",
+                    "java", "py", "c", "cpp", "txt"
+            ));
+
             int scelta = fileChooser.showSaveDialog(null);
 
             if (scelta == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
 
-                // Aggiunge .txt solo se NON è presente nessuna estensione
+                // Adds .txt if no extension is given
                 if (!file.getName().contains(".")) {
                     file = new File(file.getAbsolutePath() + ".txt");
                 }
@@ -317,13 +325,10 @@ public class TextEditor extends JFrame {
         }
     }
 
-
-    public class ChangeTheme implements ActionListener{
-
+    // Switches between light and dark themes
+    public class ChangeTheme implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
-
             try {
                 if (currentTheme.equals("dark")) {
                     UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
@@ -333,9 +338,10 @@ public class TextEditor extends JFrame {
                     txtArea.setCurrentLineHighlightColor(Color.WHITE);
                     txtArea.setForeground(Color.BLACK);
 
-
-
-
+                    // Adjust line number gutter colors for light theme
+                    scrollPane.getGutter().setBackground(new Color(240, 240, 240));
+                    scrollPane.getGutter().setLineNumberColor(Color.GRAY);
+                    scrollPane.getGutter().setBorderColor(new Color(200, 200, 200));
                 } else {
                     UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
                     currentTheme = "dark";
@@ -344,16 +350,16 @@ public class TextEditor extends JFrame {
                     txtArea.setCurrentLineHighlightColor(Color.DARK_GRAY);
                     txtArea.setForeground(Color.WHITE);
 
+                    // Adjust line number gutter colors for dark theme
+                    scrollPane.getGutter().setBackground(new Color(60, 60, 60));
+                    scrollPane.getGutter().setLineNumberColor(Color.LIGHT_GRAY);
+                    scrollPane.getGutter().setBorderColor(new Color(80, 80, 80));
                 }
 
-                // Aggiorna la UI dell'intera finestra
                 SwingUtilities.updateComponentTreeUI(TextEditor.this);
-
             } catch (UnsupportedLookAndFeelException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
-
-
 }
