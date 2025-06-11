@@ -35,6 +35,8 @@ public class TextEditor extends JFrame {
 
     public TextEditor() {
         super("Notepad - Untitled");
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/app-icon.png")));
+
         setSize(600, 480);
         setLocationRelativeTo(null); // Center window
 
