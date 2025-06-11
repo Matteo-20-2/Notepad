@@ -2,6 +2,7 @@ package org.notepad;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,7 +31,7 @@ public class TextEditor extends JFrame {
     private JMenu fileMenu, helpMenu, appereanceMenu;
     private JMenuItem newItem, openItem, saveItem, saveWithNameItem, creditsItem, themeModeItem, findItem;
     private RSyntaxTextArea txtArea;
-    private JScrollPane scrollPane;
+    private RTextScrollPane scrollPane;
     private File currentFile;
     private String currentTheme;
     private UnsavedChangesListener listener;
@@ -95,7 +96,7 @@ public class TextEditor extends JFrame {
         txtArea.setLineWrap(true);
         txtArea.setWrapStyleWord(true);
         txtArea.setMargin(new Insets(5,5,5,5));
-        scrollPane = new JScrollPane(txtArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane = new RTextScrollPane(txtArea);
         listener = new UnsavedChangesListener(this);
         txtArea.getDocument().addDocumentListener(listener);
         txtArea.addMouseWheelListener(e -> {
@@ -138,19 +139,35 @@ public class TextEditor extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    public void SetSintax(){
+    public void setSintax(){
+        System.out.println("sono nella funzione");
         String fileName = currentFile.toString().toLowerCase();
         StringTokenizer tokenizer = new StringTokenizer(fileName, ".");
-        String extension = tokenizer.nextToken();
 
+        String nome = tokenizer.nextToken();
+        String extension = tokenizer.nextToken();
+        System.out.println(extension);
 
         switch (extension){
             case "py":
-                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);;
                 break;
 
             case "java":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+                break;
+
+            case "c":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
+                break;
+
+            case "cpp":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS);
+                break;
+
+            default:
+                System.out.println("BOH");
+                break;
         }
     }
 
@@ -215,7 +232,7 @@ public class TextEditor extends JFrame {
 
 
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Text File (.txt)", "txt"));
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text File (.txt)", "txt", "py", "c", "cpp", "java"));
             int scelta = fileChooser.showOpenDialog(null);
 
             if (scelta == JFileChooser.APPROVE_OPTION) {
@@ -232,7 +249,7 @@ public class TextEditor extends JFrame {
                     //setTitle("Notepad - "+currentFile.getName());
                     listener.resetModifiedFlag(currentFile);
 
-                    SetSintax();
+                    setSintax();
 
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore apertura file: " + ex.getMessage());
@@ -292,7 +309,7 @@ public class TextEditor extends JFrame {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                     writer.write(text);
                     JOptionPane.showMessageDialog(null, "File salvato!");
-                    SetSintax();
+                    setSintax();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(null, "Errore salvataggio: " + ex.getMessage());
                 }
@@ -312,10 +329,21 @@ public class TextEditor extends JFrame {
                     UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
                     currentTheme = "light";
                     themeModeItem.setText("🌙 Dark Mode");
+                    txtArea.setBackground(Color.WHITE);
+                    txtArea.setCurrentLineHighlightColor(Color.WHITE);
+                    txtArea.setForeground(Color.BLACK);
+
+
+
+
                 } else {
                     UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
                     currentTheme = "dark";
                     themeModeItem.setText("☀️ Light Mode");
+                    txtArea.setBackground(Color.DARK_GRAY);
+                    txtArea.setCurrentLineHighlightColor(Color.DARK_GRAY);
+                    txtArea.setForeground(Color.WHITE);
+
                 }
 
                 // Aggiorna la UI dell'intera finestra
