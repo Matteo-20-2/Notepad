@@ -11,7 +11,7 @@ Notepad is a simple and lightweight desktop application written in Java for writ
 * Syntax Highlighting for code
 * Real-time character and word counter
 * Text zoom using Ctrl + mouse wheel
-* Support for `.txt`, `.java`, `.py`, `.c`, `.cpp`  
+* Support for `.txt`, `.java`, `.py`, `.c`, `.cpp`, `.html`, `.css`. `.js`, `.json` 
 * Compatible with Windows, Linux, and macOS (Java 17+)
 
 Screenshots of the interface in dark (default mode) and light mode:
