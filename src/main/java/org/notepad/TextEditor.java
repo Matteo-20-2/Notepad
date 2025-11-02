@@ -151,23 +151,38 @@ public class TextEditor extends JFrame {
 
         String nome = tokenizer.nextToken();
         String extension = tokenizer.nextToken();
-        System.out.println(extension);
 
         switch (extension){
             case "py":
-                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);;
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
                 break;
+
             case "java":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
                 break;
+
             case "c":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
                 break;
+
             case "cpp":
                 txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_CPLUSPLUS);
                 break;
-            default:
-                System.out.println("BOH");
+
+            case "html":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
+                break;
+
+            case "css":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_CSS);
+                break;
+
+            case "js":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT);
+                break;
+
+            case "json":
+                txtArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
                 break;
         }
     }
@@ -211,10 +226,10 @@ public class TextEditor extends JFrame {
 
                 Date of creation: 02/06/2025
                 
-                Last Update Date: 11/06/2025
+                Last Update Date: 02/11/2025
                 
                 Features:
-                • Syntax highlighting for Java, Python, C, and C++
+                • Syntax highlighting for Java, Python, C, and C++, HTML, CSS, JavaScript, JSON
                 • Light/Dark theme support
                 • Find text functionality
                 • Line numbers
@@ -241,8 +256,8 @@ public class TextEditor extends JFrame {
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileNameExtensionFilter(
-                    "Source Files (*.java, *.py, *.c, *.cpp) & Text Files (*.txt)",
-                    "java", "py", "c", "cpp", "txt"
+                    "Source Files (*.java, *.py, *.c, *.cpp, *html, *css, *js, *json) & Text Files (*.txt)",
+                    "java", "py", "c", "cpp", "txt", "html", "js", "css", "json"
             ));
 
             int scelta = fileChooser.showOpenDialog(null);
@@ -280,9 +295,9 @@ public class TextEditor extends JFrame {
                 setTitle("Notepad - "+currentFile.getName());
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                     writer.write(text);
-                    JOptionPane.showMessageDialog(null, "File salvato!");
+                    JOptionPane.showMessageDialog(null, "File Saved!");
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Errore salvataggio: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, "Error Saving: " + ex.getMessage());
                 }
             } else {
                 SaveWithName saveWithName = new SaveWithName();
@@ -299,8 +314,8 @@ public class TextEditor extends JFrame {
 
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileNameExtensionFilter(
-                    "Source Files (*.java, *.py, *.c, *.cpp) & Text Files (*.txt)",
-                    "java", "py", "c", "cpp", "txt"
+                    "Source Files (*.java, *.py, *.c, *.cpp, *html, *css, *js, *json) & Text Files (*.txt)",
+                    "java", "py", "c", "cpp", "txt", "html", "js", "css", "json"
             ));
 
             int scelta = fileChooser.showSaveDialog(null);
