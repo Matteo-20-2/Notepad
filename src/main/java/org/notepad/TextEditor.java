@@ -226,10 +226,10 @@ public class TextEditor extends JFrame {
 
                 Date of creation: 02/06/2025
                 
-                Last Update Date: 11/06/2025
+                Last Update Date: 02/11/2025
                 
                 Features:
-                • Syntax highlighting for Java, Python, C, and C++
+                • Syntax highlighting for Java, Python, C, and C++, HTML, CSS, JavaScript, JSON
                 • Light/Dark theme support
                 • Find text functionality
                 • Line numbers
